@@ -1,0 +1,89 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+*.egg-info/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+.env.local
+
+# Dataset and models (allow to be published to Github)
+# dataset/company_bankruptcy.csv
+# models/bankruptcy_model.pkl
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Environment Variables
+.env
+.env.local
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDEs / Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ====================================================================
+# STUDENT ML PROJECT BEST PRACTICE NOTE:
+# Typically, datasets and trained models shouldn't be pushed to GitHub 
+# if they are massive (e.g., >100MB).
+# However, since this is a final academic project, graders and reviewers 
+# often need the data (~11MB) and model (~2MB) to easily run the system 
+# without complex setup steps. 
+# Therefore, `dataset/` and `models/` are NOT ignored below.
+# If you prefer to exclude them, uncomment the two lines below:
+# ====================================================================
+
+# dataset/
+# models/

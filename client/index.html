@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bankruptcy Prediction System</title>
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Professional Dark Mode / SaaS Theme Palette */
+            --bg-color: #f4f7fe;
+            --card-bg: #ffffff;
+            --primary: #4318FF;
+            --primary-hover: #3311db;
+            --text-main: #2b3674;
+            --text-muted: #a3aebd;
+            --danger: #EE5D50;
+            --success: #05CD99;
+            --border-color: #e0e5f2;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .header-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: var(--text-main);
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 0;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 900px) {
+            .dashboard-grid.results-active {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Task 1: Column Grid Layout */
+        #features-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (min-width: 600px) {
+            #features-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        input {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            background-color: var(--bg-color);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 24, 255, 0.1);
+            background-color: #ffffff;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 2rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(67, 24, 255, 0.2);
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Results Section Styling */
+        #results-section {
+            display: none;
+            animation: slideUp 0.6s ease-out;
+            height: 100%;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .prediction-banner {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            color: white;
+            transition: all 0.4s ease;
+        }
+
+        .risk-high {
+            background-color: var(--danger);
+            box-shadow: 0 10px 20px rgba(238, 93, 80, 0.2);
+        }
+
+        .risk-low {
+            background-color: var(--success);
+            box-shadow: 0 10px 20px rgba(5, 205, 153, 0.2);
+        }
+
+        .prediction-banner h2 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .chart-container-small {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        .chart-container-large {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            font-style: italic;
+            color: var(--text-muted);
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-container">
+        <h1 style="line-height: 1.3; font-weight: 800; color: var(--primary);">
+            AI-Based Business Bankruptcy Prediction System <br />
+            <span style="font-size: 1.6rem; font-weight: 600;">Using Financial Ratios</span>
+        </h1>
+        <p class="subtitle" style="font-size: 1.15rem; margin-top: 12px; font-weight: 500;">
+            Corporate Bankruptcy Risk Prediction Dashboard
+        </p>
+    </div>
+
+    <div class="dashboard-grid" id="main-layout">
+        <!-- Input Section -->
+        <div class="card" id="input-card">
+            <h2 class="card-title">Financial Ratio Inputs</h2>
+            <div id="loading" class="loading">Establishing API Connection & Loading Features...</div>
+
+            <form id="prediction-form" style="display: none;">
+                <div id="features-container">
+                    <!-- Javascript will populate the 2-column grid here -->
+                </div>
+                <button type="submit" id="submit-btn">Predict Bankruptcy Risk</button>
+            </form>
+        </div>
+
+        <!-- Analytics Section -->
+        <div class="card" id="results-section">
+            <h2 class="card-title">Bankruptcy Risk Prediction Result</h2>
+
+            <div id="prediction-banner" class="prediction-banner">
+                <h2 id="prediction-text">--</h2>
+            </div>
+
+            <div class="charts-grid">
+                <!-- Top row of charts (Doughnut & Gauge-style) -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="chart-container-small">
+                        <canvas id="probabilityChart"></canvas>
+                    </div>
+                    <div class="chart-container-small">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Bottom row (Bar Chart for features) -->
+                <div class="chart-container-large">
+                    <canvas id="featureChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        let requiredFeatures = [];
+
+        // Map complicated backend feature names to standard financial ratios
+        const labelMapping = {
+            "Net Income to Stockholder's Equity": "Return on Equity (ROE)",
+            "Net Value Growth Rate": "Asset Growth Rate",
+            "Degree of Financial Leverage (DFL)": "Financial Leverage",
+            "Interest Coverage Ratio (Interest expense to EBIT)": "Interest Coverage",
+            "Persistent EPS in the Last Four Seasons": "Persistent EPS",
+            "Net profit before tax/Paid-in capital": "Net Profit to Capital",
+            "Net Value Per Share (B)": "Net Value Per Share",
+            "Equity to Liability": "Equity to Liability",
+            "Per Share Net profit before tax (Yuan ¥)": "Per Share Net Profit",
+            "Interest-bearing debt interest rate": "Debt Interest Rate"
+        };
+
+        // Store chart instances so we can destroy them before redrawing
+        let probChartInstance = null;
+        let distChartInstance = null;
+        let featChartInstance = null;
+
+        // Load features on page start
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch(`${API_URL}/features`);
+                if (!response.ok) throw new Error('API down or model missing');
+
+                const data = await response.json();
+                requiredFeatures = data.features;
+
+                const container = document.getElementById('features-container');
+                requiredFeatures.forEach(feature => {
+                    const cleanFeature = feature.trim();
+                    const friendlyLabel = labelMapping[cleanFeature] || cleanFeature;
+
+                    const div = document.createElement('div');
+                    div.className = 'form-group';
+                    div.innerHTML = `
+                    <label for="${feature}">${friendlyLabel}</label>
+                    <input type="number" id="${feature}" name="${feature}" step="any" required placeholder="0.00">
+                `;
+                    container.appendChild(div);
+                });
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('prediction-form').style.display = 'block';
+            } catch (error) {
+                document.getElementById('loading').textContent = 'Error connecting to the backend API. Ensure app.py is running.';
+                document.getElementById('loading').style.color = 'var(--danger)';
+            }
+        });
+
+        document.getElementById('prediction-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            // Collect Inputs
+            const formData = {};
+            const displayLabels = [];
+            const featureValues = [];
+
+            requiredFeatures.forEach(feature => {
+                const val = parseFloat(document.getElementById(feature).value);
+                formData[feature] = val;
+
+                // Format labels for the bar chart so they aren't super long
+                const cleanFeature = feature.trim();
+                let shortLabel = labelMapping[cleanFeature] || cleanFeature;
+                if (shortLabel.length > 25) shortLabel = shortLabel.substring(0, 25) + '...';
+                displayLabels.push(shortLabel);
+                featureValues.push(val);
+            });
+
+            try {
+                // Send API Request
+                const response = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+
+                // Animate Layout Shift
+                document.getElementById('main-layout').classList.add('results-active');
+                document.getElementById('results-section').style.display = 'block';
+
+                // Configure Banner
+                const isHighRisk = result.prediction === 'HIGH RISK';
+                const banner = document.getElementById('prediction-banner');
+                banner.className = `prediction-banner ${isHighRisk ? 'risk-high' : 'risk-low'}`;
+                // Output mapped risk strings
+                document.getElementById('prediction-text').textContent = isHighRisk ? 'HIGH BANKRUPTCY RISK' : 'LOW BANKRUPTCY RISK';
+
+                // Render Charts
+                renderCharts(result.probability, isHighRisk, displayLabels, featureValues);
+
+                // Scroll to results seamlessly on mobile
+                if (window.innerWidth < 900) {
+                    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+                }
+
+            } catch (error) {
+                alert(`Analysis Error: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Predict Bankruptcy Risk';
+            }
+        });
+
+        function renderCharts(probabilityStr, isHighRisk, labels, values) {
+            // Destroy existing charts to prevent hover glitching
+            if (probChartInstance) probChartInstance.destroy();
+            if (distChartInstance) distChartInstance.destroy();
+            if (featChartInstance) featChartInstance.destroy();
+
+            const probValue = parseFloat(probabilityStr) * 100;
+            const mainColor = isHighRisk ? '#EE5D50' : '#05CD99';
+
+            // Chart 1: Probability Gauge (Doughnut)
+            const probCtx = document.getElementById('probabilityChart').getContext('2d');
+            probChartInstance = new Chart(probCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Risk %', 'Safety Margin'],
+                    datasets: [{
+                        data: [probValue, 100 - probValue],
+                        backgroundColor: [mainColor, '#e0e5f2'],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: 270
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Predicted Bankruptcy Probability', color: '#2b3674' },
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Chart 2: Risk Distribution Pie Chart
+            const distCtx = document.getElementById('distributionChart').getContext('2d');
+            distChartInstance = new Chart(distCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['High Risk', 'Safe Zone'],
+                    datasets: [{
+                        // To visualize the binary risk outcome based on the model's decision
+                        data: isHighRisk ? [80, 20] : [20, 80],
+                        backgroundColor: ['#EE5D50', '#05CD99'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Risk Classification Distribution', color: '#2b3674' },
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Chart 3: Feature Standardized Bar Chart
+            const featCtx = document.getElementById('featureChart').getContext('2d');
+            featChartInstance = new Chart(featCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Input Values',
+                        data: values,
+                        backgroundColor: 'rgba(67, 24, 255, 0.7)',
+                        borderColor: '#4318FF',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Input Financial Ratios', color: '#2b3674' },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: '#e0e5f2' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>
